@@ -34,6 +34,9 @@ class _GuidePageState extends State<GuideSplashPage> {
   Rect nextRect;
   int currentPointIndex = 0;
 
+  ///滑动记录的点位
+  Offset slideOffset;
+
   @override
   void initState() {
     super.initState();
@@ -49,6 +52,7 @@ class _GuidePageState extends State<GuideSplashPage> {
     double padding = (MediaQuery.of(context).size.width / 9);
     double height = MediaQuery.of(context).size.height;
     double width = MediaQuery.of(context).size.width;
+    ///在Flutter中通过WillPopScope来实现返回按钮拦截
     return WillPopScope(
         child: Container(
           height: height,
@@ -69,8 +73,7 @@ class _GuidePageState extends State<GuideSplashPage> {
                   GuideLogs.e('拖动的开始');
                   if (widget.isSlide) {
                     setState(() {
-                      widget.pointX = startDetails.globalPosition.dx;
-                      widget.pointY = startDetails.globalPosition.dy;
+                      slideOffset = startDetails.globalPosition;
                     });
                   }
                 },
@@ -78,14 +81,18 @@ class _GuidePageState extends State<GuideSplashPage> {
                   GuideLogs.e('位置变化 dx:${startDetails.globalPosition.dx}  dy:${startDetails.globalPosition.dy}');
                   if (widget.isSlide) {
                     setState(() {
-                      widget.pointX = startDetails.globalPosition.dx;
-                      widget.pointY = startDetails.globalPosition.dy;
+                     slideOffset = startDetails.globalPosition;
                     });
                   }
                 },
                 /*横向拖动的结束状态*/
                 onHorizontalDragEnd: (endDetails) {
                   GuideLogs.e('拖动的结束');
+                  if (widget.isSlide) {
+                    setState(() {
+                      slideOffset = Offset.zero;
+                    });
+                  }
                 },
                 child: Stack(
                   children: <Widget>[
@@ -96,6 +103,8 @@ class _GuidePageState extends State<GuideSplashPage> {
             ),
           ),
         ),
+        ///在Android手机中，当点击后退按钮的时候，会回调此事件
+        ///在这里返回 false 表示拦截事件
         onWillPop: () async {
           return Future.value(false);
         });
@@ -106,22 +115,27 @@ class _GuidePageState extends State<GuideSplashPage> {
     Offset globalPosition = detail.globalPosition;
     GuideLogs.e("onTapUp 点击了 ${globalPosition.dx}  ${globalPosition.dy}");
     if (nextRect != null) {
+      ///获取当前 下一步的区域
       double left = nextRect.left - 60;
       double right = nextRect.right + 60;
       double bottom = nextRect.bottom + 60;
       double top = nextRect.top - 60;
+      ///获取当前屏幕上手指点击的位置
       double dx = globalPosition.dx;
       double dy = globalPosition.dy;
 
       if (dx > left && dx < right && dy > top && dy < bottom) {
         if (currentPointIndex < widget.curvePointList.length - 1) {
+          ///如果当前不是最后一页面，那么取出下一页的内容信息
           setState(() {
             currentPointIndex++;
           });
+          ///蒙版中点击下一步的回调事件
           if(widget.clickCallback!=null){
             widget.clickCallback(false);
           }
         } else {
+          ///如果是最后一页退出蒙版引导
           if(widget.clickCallback!=null){
             widget.clickCallback(true);
           }
@@ -148,11 +162,11 @@ class _GuidePageState extends State<GuideSplashPage> {
       size: Size(width, height),
 
       ///这是CustomPainter类的一个实例，它在画布上绘制绘画的第一层
-//      painter: CurvePainter(widget.textColor, curvePoint.x, curvePoint.y,textTip: curvePoint.tipsMessage,
-//          clickLiser: liserClickCallback),
-      painter: CurvePainter(
-          widget.textColor, widget.pointX / width, widget.pointY / height,
-          textTip: curvePoint.tipsMessage, clickLiser: liserClickCallback),
+      painter: CurvePainter(widget.textColor, curvePoint.x, curvePoint.y,textTip: curvePoint.tipsMessage,
+          clickLiser: liserClickCallback,slideOffset:slideOffset),
+//      painter: CurvePainter(
+//          widget.textColor, widget.pointX / width, widget.pointY / height,
+//          textTip: curvePoint.tipsMessage, clickLiser: liserClickCallback),
 
       ///完成绘画之后，子画构将显示在绘画的顶部。
 //      child: Center(

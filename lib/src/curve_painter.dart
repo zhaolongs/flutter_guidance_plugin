@@ -2,6 +2,7 @@ import 'dart:math';
 import 'dart:ui' as ui; //这里用as取个别名，有库名冲突
 
 import 'package:flutter/material.dart';
+import 'package:flutter_guidance_plugin/src/guide_logs.dart';
 
 class CurvePoint {
 
@@ -57,10 +58,13 @@ class CurvePainter extends CustomPainter {
   ///下一步文字
   String nextTextTip ;
 
+  ///
+  Offset slideOffset;
+  Offset preSlideOffset;
   Function(Rect rect) clickLiser;
 
   CurvePainter(this.textColor, this.pointX, this.pointY,
-      {this.clickLiser,this.textTip,this.nextTextTip="下一步"});
+      {this.clickLiser,this.textTip,this.nextTextTip="下一步",this.slideOffset});
 
   ///实际的绘画发生在这里
   @override
@@ -69,6 +73,7 @@ class CurvePainter extends CustomPainter {
     double height = size.height;
     //屏幕宽
     double width = size.width;
+    GuideLogs.e("当前指示点 x $pointX y $pointY");
 
     ///计算箭头的位置
     ///外面传来的是 0-1
@@ -126,42 +131,48 @@ class CurvePainter extends CustomPainter {
      */
     double left = (width - 214) / 2;
     double top = 64;
-    if (curverAlign == CurverAlign.topCenter) {
-      ///顶部居中
-      left = (width - 214) / 2;
-      top = 64;
-    } else if (curverAlign == CurverAlign.topLeft) {
-      ///顶部左对齐
-      left = (width - 214) / 2;
-      top = 64;
-    } else if (curverAlign == CurverAlign.topRight) {
-      ///顶部右对齐
-      left = width - 214;
-      top = 64;
-    } else if (curverAlign == CurverAlign.center) {
-      ///居中
-      left = (width - 214) / 2;
-      top = height / 2 - 20;
-    } else if (curverAlign == CurverAlign.centerLeft) {
-      ///居中左对齐
-      left = 0;
-      top = height / 2 - 20;
-    } else if (curverAlign == CurverAlign.centerRight) {
-      ///居中右对齐
-      left = width - 214;
-      top = height / 2 - 20;
-    } else if (curverAlign == CurverAlign.bottomCenter) {
-      ///居中底部
-      left = (width - 214) / 2;
-      top = height - 100;
-    } else if (curverAlign == CurverAlign.bottomLeft) {
-      ///居中左对齐
-      left = 0;
-      top = height - 100;
-    } else if (curverAlign == CurverAlign.bottomRight) {
-      ///居中右对齐
-      left = width - 214;
-      top = height - 100;
+    if(slideOffset==null||slideOffset==Offset.zero) {
+      if (curverAlign == CurverAlign.topCenter) {
+        ///顶部居中
+        left = (width - 214) / 2;
+        top = 64;
+      } else if (curverAlign == CurverAlign.topLeft) {
+        ///顶部左对齐
+        left = (width - 214) / 2;
+        top = 64;
+      } else if (curverAlign == CurverAlign.topRight) {
+        ///顶部右对齐
+        left = width - 214;
+        top = 64;
+      } else if (curverAlign == CurverAlign.center) {
+        ///居中
+        left = (width - 214) / 2;
+        top = height / 2 - 20;
+      } else if (curverAlign == CurverAlign.centerLeft) {
+        ///居中左对齐
+        left = 0;
+        top = height / 2 - 20;
+      } else if (curverAlign == CurverAlign.centerRight) {
+        ///居中右对齐
+        left = width - 214;
+        top = height / 2 - 20;
+      } else if (curverAlign == CurverAlign.bottomCenter) {
+        ///居中底部
+        left = (width - 214) / 2;
+        top = height - 100;
+      } else if (curverAlign == CurverAlign.bottomLeft) {
+        ///居中左对齐
+        left = 0;
+        top = height - 100;
+      } else if (curverAlign == CurverAlign.bottomRight) {
+        ///居中右对齐
+        left = width - 214;
+        top = height - 100;
+      }
+      preSlideOffset = Offset(top,left);
+    }else{
+      left= slideOffset.dx-20;
+      top= slideOffset.dy-20;
     }
 
     CurvePoint A = CurvePoint(left, top);
@@ -273,6 +284,8 @@ class CurvePainter extends CustomPainter {
     if (clickLiser != null) {
       clickLiser(rect);
     }
+    ///绘制点位置
+    canvas.drawCircle(Offset(ex,ey), 4, paint);
 
     ///绘制文本
     drawTextFunction(
@@ -343,6 +356,8 @@ class CurvePainter extends CustomPainter {
 
     ///绘制 Path
     canvas.drawPath(path, paint);
+    ///绘制点位置
+    canvas.drawCircle(Offset(ex,ey), 4, paint);
 
     double nextX = 0;
     double nextY = 0;
@@ -456,6 +471,8 @@ class CurvePainter extends CustomPainter {
     if (clickLiser != null) {
       clickLiser(rect);
     }
+    ///绘制点位置
+    canvas.drawCircle(Offset(ex,ey), 4, paint);
 
     ///绘制文本
     drawTextFunction(
@@ -466,19 +483,25 @@ class CurvePainter extends CustomPainter {
   }
 
   ///[textWidth] 文本的宽度
+  ///[textOffset] 文本绘制的开始位置 左上角
+  ///[text] 绘制的文字内容
   void drawTextFunction(
       double textWidth, Offset textOffset, Canvas canvas, String text,
       {Color textColor = Colors.blue}) {
+    ///创建画笔
     var textPaint = Paint();
+    ///设置画笔颜色
     textPaint.color = textColor;
-// 新建一个段落建造器，然后将文字基本信息填入;
+    /// 新建一个段落建造器，然后将文字基本信息填入;
     ui.ParagraphBuilder pb = ui.ParagraphBuilder(ui.ParagraphStyle(
       textAlign: TextAlign.center,
       fontWeight: FontWeight.w400,
       fontStyle: FontStyle.normal,
       fontSize: 15.0,
     ));
+    ///设置文字的样式
     pb.pushStyle(ui.TextStyle(color: textColor));
+
     if (text == null || text.length == 0) {
       text = "--";
     } else if (text.length > 20) {
@@ -490,7 +513,6 @@ class CurvePainter extends CustomPainter {
     ui.ParagraphConstraints pc = ui.ParagraphConstraints(width: textWidth);
     // 这里需要先layout,将宽度约束填入，否则无法绘制
     ui.Paragraph paragraph = pb.build()..layout(pc);
-
     ///偏移量在这里指的是文字左上角的 位置
     canvas.drawParagraph(paragraph, textOffset);
   }
