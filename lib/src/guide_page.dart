@@ -246,6 +246,7 @@ class _GuidePageState extends State<GuideSplashPage> {
           pointWidth: curvePoint.eWidth,
           textTip: curvePoint.tipsMessage,
           clickLiser: liserClickCallback,
+          isShowReact: curvePoint.isShowReact,
           slideOffset: slideOffset),
 //      painter: CurvePainter(
 //          widget.textColor, widget.pointX / width, widget.pointY / height,

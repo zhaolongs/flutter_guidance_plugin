@@ -60,7 +60,7 @@ class CurvePainter extends CustomPainter {
   Function(Rect rect) clickLiser;
 
   CurvePainter(this.textColor, this.pointX, this.pointY,
-      {this.clickLiser, this.textTip, this.nextTextTip = "下一步", this.slideOffset,this.pointHeight,this.pointWidth,this.isShowReact});
+      {this.clickLiser, this.textTip, this.nextTextTip = "下一步", this.slideOffset,this.pointHeight,this.pointWidth,this.isShowReact=false});
 
   ///实际的绘画发生在这里
   @override
