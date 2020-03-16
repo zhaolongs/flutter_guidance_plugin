@@ -37,30 +37,40 @@ class CurvePainter extends CustomPainter {
   ///为true时显示指引的矩形
   bool isShowReact;
 
-  ///文字颜色
-  Color textColor;
+  ///提示文字颜色
+  Color tipsTextColor;
+  ///提示文字背景颜色
+  Color tipsBackgroundColor;
+  ///提示文字内容
+  String textTip ;
+  ///提示文字大小
+  double tipsTextSize;
 
   ///对齐位置
   CurverAlign curverAlign = CurverAlign.topRight;
   ArrowsAlign curverArrowsAlign = ArrowsAlign.bottomtRight;
 
-  ///提示文字
-  String textTip = "这里是旱这里是旱这里是旱这里是旱这里是旱这里是旱这里是旱这里是旱这里是旱这里是旱";
-  String defaultTextTip = "请输入提示文字";
 
   ///下一步文字颜色
-  Color nextTextColor = Colors.black;
-
+  Color nextTextColor ;
+  ///下一步背景颜色
+  Color nextBackgroundColor;
   ///下一步文字
   String nextTextTip;
+  ///下一步文字大小
+  double nextTextSize;
 
   ///
   Offset slideOffset;
   Offset preSlideOffset;
   Function(Rect rect) clickLiser;
 
-  CurvePainter(this.textColor, this.pointX, this.pointY,
-      {this.clickLiser, this.textTip, this.nextTextTip = "下一步", this.slideOffset,this.pointHeight,this.pointWidth,this.isShowReact=false});
+  CurvePainter(this.tipsTextColor, this.pointX, this.pointY,
+      {this.clickLiser,
+        this.textTip = "", this.tipsTextSize = 16,this.tipsBackgroundColor=Colors.white,
+        this.nextTextTip = "下一步", this.nextTextColor = Colors.black, this.nextBackgroundColor = Colors
+          .white, this.nextTextSize = 16,
+        this.slideOffset, this.pointHeight, this.pointWidth, this.isShowReact = false});
 
   ///实际的绘画发生在这里
   @override
@@ -282,7 +292,7 @@ class CurvePainter extends CustomPainter {
 
     ///绘制文本
     drawTextFunction(
-        C.x - A.x - 40, Offset(A.x + 20, A.y - 20), canvas, textTip);
+        C.x - A.x - 40, Offset(A.x + 20, A.y - 20), canvas, textTip,textColor: tipsTextColor,textSize: tipsTextSize);
 
     ///绘制下一步
     drawNextFunction(A, B, C, G,size,canvas, nextTextTip);
@@ -355,7 +365,7 @@ class CurvePainter extends CustomPainter {
 
     ///绘制文本
     drawTextFunction(
-        C.x - A.x - 40, Offset(A.x + 20, A.y - 20), canvas, textTip);
+        C.x - A.x - 40, Offset(A.x + 20, A.y - 20), canvas, textTip,textColor: tipsTextColor,textSize: tipsTextSize);
 
     ///绘制下一步
     drawNextFunction(A, B, C, G,size,canvas, nextTextTip);
@@ -427,7 +437,7 @@ class CurvePainter extends CustomPainter {
 
     ///绘制文本
     drawTextFunction(
-        C.x - A.x - 40, Offset(A.x + 20, A.y - 20), canvas, textTip);
+        C.x - A.x - 40, Offset(A.x + 20, A.y - 20), canvas, textTip,textColor: tipsTextColor,textSize: tipsTextSize);
 
     ///绘制下一步
     drawNextFunction(A, B, C, G,size,canvas, nextTextTip);
@@ -483,7 +493,7 @@ class CurvePainter extends CustomPainter {
     }
 
     var paint = Paint();
-    paint.color = Colors.white;
+    paint.color = nextBackgroundColor;
     //用Rect构建一个边长50,中心点坐标为100,100的矩形
     Rect rect =
     Rect.fromCenter(center: Offset(nextX, nextY), width: 120, height: 44);
@@ -496,7 +506,7 @@ class CurvePainter extends CustomPainter {
       clickLiser(rect);
     }
 
-    drawTextFunction(rect.width,Offset(rect.left,rect.top+10),canvas,"下一步");
+    drawTextFunction(rect.width,Offset(rect.left,rect.top+10),canvas,"下一步",textColor: nextTextColor,textSize:nextTextSize);
 
   }
 
@@ -505,7 +515,7 @@ class CurvePainter extends CustomPainter {
   ///[text] 绘制的文字内容
   void drawTextFunction(double textWidth, Offset textOffset, Canvas canvas,
       String text,
-      {Color textColor = Colors.blue}) {
+      {Color textColor = Colors.blue,double textSize=16}) {
     ///创建画笔
     var textPaint = Paint();
 
@@ -517,7 +527,7 @@ class CurvePainter extends CustomPainter {
       textAlign: TextAlign.center,
       fontWeight: FontWeight.w400,
       fontStyle: FontStyle.normal,
-      fontSize: 15.0,
+      fontSize: textSize,
     ));
 
     ///设置文字的样式

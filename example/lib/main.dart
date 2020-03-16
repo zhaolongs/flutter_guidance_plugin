@@ -35,6 +35,7 @@ class _MyAppState extends State<MyApp> {
     super.initState();
 
     Future.delayed(Duration(milliseconds: 5),(){
+      show1();
     });
   }
 
@@ -117,7 +118,7 @@ class _MyAppState extends State<MyApp> {
     ///参数三 [pointX][pointY] 当 curvePointList 为null 时起作用 可用作只有一个引导指引功能页面
     ///参数五 [isSlide] 为true 时，提示框可以移动
     ///参数六 [logs] 为true 时输出Log日志
-    showBeginnerGuidance(context, curvePointList: curvePointList,pointX: 0,pointY: 0,isSlide:false ,logs: true);
+    showBeginnerGuidance(context, curvePointList: curvePointList,pointX: 0,pointY: 0,isSlide:false ,logs: true,tipsTextSize: 22);
   }
 
   ///这里是可滑动的模拟数据

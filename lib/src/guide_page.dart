@@ -7,9 +7,29 @@ import 'guide_bean.dart';
 
 class GuideSplashPage extends StatefulWidget {
   ///用户指引行为
-  Color textColor;
   double pointX = 0;
   double pointY = 0;
+
+
+  ///提示文字颜色
+  Color tipsTextColor;
+  ///提示文字背景颜色
+  Color tipsBackgroundColor;
+  ///提示文字内容
+  String textTip ;
+  ///提示文字大小
+  double tipsTextSize;
+
+
+  ///下一步文字颜色
+  Color nextTextColor ;
+  ///下一步背景颜色
+  Color nextBackgroundColor;
+  ///下一步文字
+  String nextTextTip;
+  ///下一步文字大小
+  double nextTextSize;
+
 
   ///是否可滑动
   bool isSlide = false;
@@ -22,7 +42,17 @@ class GuideSplashPage extends StatefulWidget {
 
   GuideSplashPage({this.globalKeyPointList,
     this.curvePointList,
-    this.textColor = Colors.black,
+    this.tipsTextColor = Colors.blue,
+    this.tipsBackgroundColor = Colors.white,
+    this.tipsTextSize=16.0,
+    ///下一步文字颜色
+    this. nextTextColor ,
+    ///下一步背景颜色
+    this. nextBackgroundColor,
+    ///下一步文字
+    this. nextTextTip,
+    ///下一步文字大小
+    this. nextTextSize,
     this.pointX = 0,
     this.pointY = 0,
     this.isSlide = false,
@@ -59,7 +89,7 @@ class _GuidePageState extends State<GuideSplashPage> {
         widget.globalKeyPointList.length == 0) &&
         (widget.curvePointList == null || widget.curvePointList.length == 0)) {
       widget.curvePointList = [];
-      widget.curvePointList.add(CurvePoint(widget.pointX, widget.pointY));
+      widget.curvePointList.add(CurvePoint(widget.pointX, widget.pointY,tipsMessage:widget.textTip));
     } else if (widget.globalKeyPointList != null &&
         widget.globalKeyPointList.length > 0) {
 
@@ -241,10 +271,17 @@ class _GuidePageState extends State<GuideSplashPage> {
       size: Size(width, height),
 
       ///这是CustomPainter类的一个实例，它在画布上绘制绘画的第一层
-      painter: CurvePainter(widget.textColor, curvePoint.x, curvePoint.y,
+      painter: CurvePainter(widget.tipsTextColor, curvePoint.x, curvePoint.y,
+          tipsBackgroundColor: widget.tipsBackgroundColor,
+          tipsTextSize: widget.tipsTextSize,
+          textTip: curvePoint.tipsMessage,
+          nextBackgroundColor: widget.nextBackgroundColor,
+          nextTextSize: widget.nextTextSize,
+          nextTextColor: widget.nextTextColor,
+          nextTextTip: curvePoint.nextString,
           pointHeight: curvePoint.eHeight,
           pointWidth: curvePoint.eWidth,
-          textTip: curvePoint.tipsMessage,
+
           clickLiser: liserClickCallback,
           isShowReact: curvePoint.isShowReact,
           slideOffset: slideOffset),

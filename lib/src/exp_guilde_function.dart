@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 
 import 'curve_painter.dart';
 import 'guide_bean.dart';
@@ -23,7 +24,15 @@ void showBeginnerGuidance(BuildContext context,
       List<GlobalKeyPoint> globalKeyPointList,
       double pointX = 0,
       double pointY = 0,
-      Color tipsTextColor,
+      Color tipsTextColor=Colors.blue,
+      Color tipsBackGroundColor=Colors.white,
+      double tipsTextSize =16.0,
+      ///下一步文字颜色
+      Color nextTextColor=Colors.white,
+      ///下一步背景颜色
+      Color nextBackgroundColor=Colors.red,
+      ///下一步文字大小
+      double  nextTextSize=16.0,
       bool isSlide = false,
       bool logs = false,
       Function(bool isEnd) clickCallback}) {
@@ -39,7 +48,12 @@ void showBeginnerGuidance(BuildContext context,
           curvePointList: curvePointList,
           pointX: pointX,
           pointY: pointY,
-          textColor: tipsTextColor,
+          tipsTextColor: tipsTextColor,
+          tipsBackgroundColor: tipsBackGroundColor,
+          tipsTextSize: tipsTextSize,
+          nextBackgroundColor: nextBackgroundColor,
+          nextTextColor: nextTextColor,
+          nextTextSize: nextTextSize,
           isSlide: isSlide,
           clickCallback: clickCallback);
     },
