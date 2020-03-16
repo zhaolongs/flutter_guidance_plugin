@@ -35,7 +35,6 @@ class _MyAppState extends State<MyApp> {
     super.initState();
 
     Future.delayed(Duration(milliseconds: 5),(){
-      show1();
     });
   }
 
@@ -45,30 +44,40 @@ class _MyAppState extends State<MyApp> {
       appBar: AppBar(
         title: Text("新手引导蒙版"),
       ),
-      body: Row(
-        children: <Widget>[
-          Expanded(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.start,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: <Widget>[
-                FlatButton(
-                  child: Text("再次显示 引导蒙版"),
-                  onPressed: () {
-                    show1();
-                  },
-                ),
-                FlatButton(
-                  child: Text("显示 可滑动的引导蒙版"),
-                  onPressed: () {
-                    show2();
-                  },
-                ),
-              ],
-            ),
-          )
-        ],
-      ),
+      body: Stack(children:<Widget>[
+      Column(children: <Widget>[
+        FlatButton(
+          key:_key1,
+          child: Text("再次显示 引导蒙版"),
+          onPressed: () {
+            show1();
+          },
+        ),
+        FlatButton(
+          key:_key2,
+          child: Text("显示 可滑动的引导蒙版"),
+          onPressed: () {
+            show2();
+          },
+        ),
+
+        SizedBox(height: 33,),
+        FlatButton(
+          key:_key3,
+          child: Text("显示 可滑动的引导蒙版2"),
+          onPressed: () {
+            show3();
+          },
+        ),
+
+      ],),
+        Align(alignment: Alignment.bottomCenter,child: Text("测试widghet",key:_key4),),
+        Align(alignment: Alignment.bottomRight,child: Text("测试widghet",key:_key5),),
+        Align(alignment: Alignment.bottomLeft,child: Text("测试widghet",key:_key6),),
+        Align(alignment: Alignment(0,0.3),child: Text("测试widghet",key:_key7),),
+        Align(alignment: Alignment(-1,0.3),child: Text("测试widghet",key:_key8),),
+        Align(alignment: Alignment(1,0.4),child: Text("测试widghet",key:_key9),),
+      ])
     );
   }
 
@@ -97,6 +106,9 @@ class _MyAppState extends State<MyApp> {
     }
     return curvePointList;
   }
+
+
+  ///这里是不可滑动的模拟数据
   void show1() {
     ///获取模拟数据
     List<CurvePoint>  curvePointList = randomTestData();
@@ -108,9 +120,36 @@ class _MyAppState extends State<MyApp> {
     showBeginnerGuidance(context, curvePointList: curvePointList,pointX: 0,pointY: 0,isSlide:false ,logs: true);
   }
 
+  ///这里是可滑动的模拟数据
   void show2() {
     ///获取模拟数据
     List<CurvePoint>  curvePointList = randomTestData();
     showBeginnerGuidance(context, curvePointList: curvePointList,logs: true,isSlide: true);
+  }
+  GlobalKey _key1 = GlobalKey();
+  GlobalKey _key2 = GlobalKey();
+  GlobalKey _key3 = GlobalKey();
+  GlobalKey _key4 = GlobalKey();
+  GlobalKey _key5 = GlobalKey();
+  GlobalKey _key6 = GlobalKey();
+  GlobalKey _key7 = GlobalKey();
+  GlobalKey _key8 = GlobalKey();
+  GlobalKey _key9 = GlobalKey();
+  ///这里是根据KEY 自动计算位置信息的
+  void show3(){
+    List<GlobalKeyPoint>  globalKeyPointList =[];
+    globalKeyPointList.add(GlobalKeyPoint(_key1,tipsMessage: "点击这里可显示蒙版引导效果哈"));
+    globalKeyPointList.add(GlobalKeyPoint(_key2,tipsMessage: "点击这里可 再次显示 引导蒙版"));
+    globalKeyPointList.add(GlobalKeyPoint(_key3,tipsMessage: "点击这里可 再次显示 引导蒙版 这里是自动计算坐标的"));
+//
+    globalKeyPointList.add(GlobalKeyPoint(_key4,tipsMessage: "测试widget"));
+    globalKeyPointList.add(GlobalKeyPoint(_key5,tipsMessage: "测试widget"));
+    globalKeyPointList.add(GlobalKeyPoint(_key6,tipsMessage: "测试widget"));
+//
+    globalKeyPointList.add(GlobalKeyPoint(_key7,tipsMessage: "测试widget"));
+    globalKeyPointList.add(GlobalKeyPoint(_key8,tipsMessage: "测试widget"));
+    globalKeyPointList.add(GlobalKeyPoint(_key9,tipsMessage: "测试widget"));
+
+    showBeginnerGuidance(context, globalKeyPointList:globalKeyPointList ,logs: true,isSlide: true);
   }
 }

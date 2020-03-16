@@ -1,6 +1,5 @@
-
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'dart:async';
 import 'package:flutter_guidance_plugin/src/guide_logs.dart';
 
 import 'curve_painter.dart';
@@ -14,14 +13,19 @@ class GuideSplashPage extends StatefulWidget {
   ///是否可滑动
   bool isSlide = false;
 
+  ///需要引导的位置信息  List，GlobalKey widget 位置主键标识
+  ///还是要转换成 List<CurvePoint>
+  List<GlobalKeyPoint> globalKeyPointList;
   List<CurvePoint> curvePointList;
   Function(bool isEnd) clickCallback;
-  GuideSplashPage(
-      {this.curvePointList,
-      this.textColor = Colors.black,
-      this.pointX = 0,
-      this.pointY = 0,
-      this.isSlide = false,this.clickCallback});
+
+  GuideSplashPage({this.globalKeyPointList,
+    this.curvePointList,
+    this.textColor = Colors.black,
+    this.pointX = 0,
+    this.pointY = 0,
+    this.isSlide = false,
+    this.clickCallback});
 
   @override
   State<StatefulWidget> createState() {
@@ -41,65 +45,127 @@ class _GuidePageState extends State<GuideSplashPage> {
   void initState() {
     super.initState();
 
-    if (widget.curvePointList == null || widget.curvePointList.length == 0) {
+    // 监听widget渲染完成
+    WidgetsBinding.instance.addPostFrameCallback((duration){
+      ///页面初始化完成后再构建数据
+     controllerInitData();
+    });
+  }
+  void controllerInitData() {
+
+
+    if ((widget.globalKeyPointList == null ||
+        widget.globalKeyPointList.length == 0) &&
+        (widget.curvePointList == null || widget.curvePointList.length == 0)) {
       widget.curvePointList = [];
       widget.curvePointList.add(CurvePoint(widget.pointX, widget.pointY));
+    } else if (widget.globalKeyPointList != null &&
+        widget.globalKeyPointList.length > 0) {
+
+      widget.curvePointList = [];
+
+      ///获取当前屏幕的宽与高
+      double screenWidth2 = MediaQuery
+          .of(context)
+          .size
+          .width;
+      double screenHeight2 = MediaQuery
+          .of(context)
+          .size
+          .height;
+
+      ///转换数据
+      ///将 GlobalKeyPoint数据转为 CurvePoint 类型数据
+      for (GlobalKeyPoint pointBean in widget.globalKeyPointList) {
+        if (pointBean.key != null && pointBean.key.currentContext != null) {
+          //获取position
+          RenderBox renderBox = pointBean.key.currentContext.findRenderObject();
+          ///获取 Offset
+          Offset offset1 = renderBox.localToGlobal(Offset.zero);
+          ///获取 Size
+          //获取size
+          Size size1 = renderBox.size;
+
+          ///构建使用数据结构
+          ///计算比例
+          CurvePoint curvePoint = CurvePoint(
+              offset1.dx / screenWidth2, (offset1.dy +size1.height) / screenHeight2,
+              tipsMessage: pointBean.tipsMessage,
+              nextString: pointBean.nextString,eWidth: size1.width,eHeight: size1.height,isShowReact: pointBean.isShowReact);
+
+
+          widget.curvePointList.add(curvePoint);
+
+          GuideLogs.e(
+              "获取到的位置信息 dx ${offset1.dx}  dy  ${offset1
+                  .dy}  screenWidht $screenWidth2  screenHeight $screenHeight2 eWidth${size1.width} eHeight${size1.height}");
+        } else {
+          GuideLogs.e("空数据 ");
+        }
+      }
+
+      setState(() {
+
+      });
     }
   }
-
   @override
   Widget build(BuildContext context) {
-    double padding = (MediaQuery.of(context).size.width / 9);
-    double height = MediaQuery.of(context).size.height;
-    double width = MediaQuery.of(context).size.width;
+    double padding = (MediaQuery
+        .of(context)
+        .size
+        .width / 9);
+    double height = MediaQuery
+        .of(context)
+        .size
+        .height;
+    double width = MediaQuery
+        .of(context)
+        .size
+        .width;
+
     ///在Flutter中通过WillPopScope来实现返回按钮拦截
     return WillPopScope(
-        child: Container(
-          height: height,
-          width: width,
-          color: Color(0x90000000),
-          child: Padding(
-            padding: EdgeInsets.all(padding),
-            child: new Material(
-              color: Color(0x00ffffff),
-              type: MaterialType.transparency,
-              child: GestureDetector(
-                onTapUp: (TapUpDetails detail) {
-                  GuideLogs.e('onTapUp');
-                  onTap(context, detail);
-                },
-                /*横向拖动的开始状态*/
-                onHorizontalDragStart: (startDetails) {
-                  GuideLogs.e('拖动的开始');
-                  if (widget.isSlide) {
-                    setState(() {
-                      slideOffset = startDetails.globalPosition;
-                    });
-                  }
-                },
-                onHorizontalDragUpdate: (startDetails) {
-                  GuideLogs.e('位置变化 dx:${startDetails.globalPosition.dx}  dy:${startDetails.globalPosition.dy}');
-                  if (widget.isSlide) {
-                    setState(() {
-                     slideOffset = startDetails.globalPosition;
-                    });
-                  }
-                },
-                /*横向拖动的结束状态*/
-                onHorizontalDragEnd: (endDetails) {
-                  GuideLogs.e('拖动的结束');
-                  if (widget.isSlide) {
-                    setState(() {
-                      slideOffset = Offset.zero;
-                    });
-                  }
-                },
-                child: Stack(
-                  children: <Widget>[
-                    buildCustomPainter(),
-                  ],
-                ),
-              ),
+        child: new Material(
+          color: Color(0x00ffffff),
+          type: MaterialType.transparency,
+          child: GestureDetector(
+            onTapUp: (TapUpDetails detail) {
+              GuideLogs.e('onTapUp');
+              onTap(context, detail);
+            },
+            /*横向拖动的开始状态*/
+            onHorizontalDragStart: (startDetails) {
+              GuideLogs.e('拖动的开始');
+              if (widget.isSlide) {
+                setState(() {
+                  slideOffset = startDetails.globalPosition;
+                });
+              }
+            },
+            onHorizontalDragUpdate: (startDetails) {
+              GuideLogs.e(
+                  '位置变化 dx:${startDetails.globalPosition
+                      .dx}  dy:${startDetails.globalPosition.dy}');
+              if (widget.isSlide) {
+                setState(() {
+                  slideOffset = startDetails.globalPosition;
+                });
+              }
+            },
+            /*横向拖动的结束状态*/
+            onHorizontalDragEnd: (endDetails) {
+              GuideLogs.e('拖动的结束');
+              if (widget.isSlide) {
+                setState(() {
+                  slideOffset = Offset.zero;
+                });
+              }
+            },
+            child: Stack(
+              children: <Widget>[
+                buildCustomPainter(),
+              ],
             ),
           ),
         ),
@@ -120,6 +186,7 @@ class _GuidePageState extends State<GuideSplashPage> {
       double right = nextRect.right + 60;
       double bottom = nextRect.bottom + 60;
       double top = nextRect.top - 60;
+
       ///获取当前屏幕上手指点击的位置
       double dx = globalPosition.dx;
       double dy = globalPosition.dy;
@@ -130,13 +197,14 @@ class _GuidePageState extends State<GuideSplashPage> {
           setState(() {
             currentPointIndex++;
           });
+
           ///蒙版中点击下一步的回调事件
-          if(widget.clickCallback!=null){
+          if (widget.clickCallback != null) {
             widget.clickCallback(false);
           }
         } else {
           ///如果是最后一页退出蒙版引导
-          if(widget.clickCallback!=null){
+          if (widget.clickCallback != null) {
             widget.clickCallback(true);
           }
           Navigator.of(context).pop();
@@ -151,8 +219,18 @@ class _GuidePageState extends State<GuideSplashPage> {
   }
 
   Widget buildCustomPainter() {
-    double height = MediaQuery.of(context).size.height;
-    double width = MediaQuery.of(context).size.width;
+    double height = MediaQuery
+        .of(context)
+        .size
+        .height;
+    double width = MediaQuery
+        .of(context)
+        .size
+        .width;
+
+    if(widget.curvePointList==null||widget.curvePointList.length==0){
+      return Container(height: height,width: width,color: Color(0x000000),);
+    }
 
     ///获取当前指引信息
     CurvePoint curvePoint = widget.curvePointList[currentPointIndex];
@@ -162,8 +240,12 @@ class _GuidePageState extends State<GuideSplashPage> {
       size: Size(width, height),
 
       ///这是CustomPainter类的一个实例，它在画布上绘制绘画的第一层
-      painter: CurvePainter(widget.textColor, curvePoint.x, curvePoint.y,textTip: curvePoint.tipsMessage,
-          clickLiser: liserClickCallback,slideOffset:slideOffset),
+      painter: CurvePainter(widget.textColor, curvePoint.x, curvePoint.y,
+          pointHeight: curvePoint.eHeight,
+          pointWidth: curvePoint.eWidth,
+          textTip: curvePoint.tipsMessage,
+          clickLiser: liserClickCallback,
+          slideOffset: slideOffset),
 //      painter: CurvePainter(
 //          widget.textColor, widget.pointX / width, widget.pointY / height,
 //          textTip: curvePoint.tipsMessage, clickLiser: liserClickCallback),
@@ -177,4 +259,6 @@ class _GuidePageState extends State<GuideSplashPage> {
       ///foregroundPainter:CurvePainter(widget.textColor, 0.4, 0.4),
     );
   }
+
+
 }

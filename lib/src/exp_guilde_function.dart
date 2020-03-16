@@ -8,6 +8,7 @@ import 'guide_page.dart';
 ///显示新手蒙版引导页面
 /// 更多信息可查看 https://blog.csdn.net/zl18603543572
 ///[context]当前上下文对象
+///[globalKeyPointList] 需要引导的位置信息  List，GlobalKey widget 位置主键标识
 ///[curvePointList] 需要引导的位置信息  List，
 ///   CurvePoint 中 x,y 指定指引位置 从0-1 ，手机屏幕左上角开始为（0，0）位置，右下角为(1,1)
 ///   CurvePoint tipsMessage 为引导框内显示的文字
@@ -18,6 +19,7 @@ import 'guide_page.dart';
 /// [clickCallback] 点击下一步的回调事件 参数 isEnd 为true 时表示最后一页指引
 void showBeginnerGuidance(BuildContext context,
     {List<CurvePoint> curvePointList,
+      List<GlobalKeyPoint> globalKeyPointList,
       double pointX = 0,
       double pointY = 0,
       Color tipsTextColor,
@@ -32,6 +34,7 @@ void showBeginnerGuidance(BuildContext context,
     pageBuilder: (context, animation, secondaryAnimation) {
       ///GuideSplashPage 是引导页面具体实现
       return GuideSplashPage(
+          globalKeyPointList:globalKeyPointList,
           curvePointList: curvePointList,
           pointX: pointX,
           pointY: pointY,
