@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 
 import 'curve_painter.dart';
+import 'guide_bean.dart';
 import 'guide_logs.dart';
 import 'guide_page.dart';
 

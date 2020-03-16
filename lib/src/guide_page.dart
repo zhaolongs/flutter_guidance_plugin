@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter_guidance_plugin/src/guide_logs.dart';
 
 import 'curve_painter.dart';
+import 'guide_bean.dart';
 
 class GuideSplashPage extends StatefulWidget {
   ///用户指引行为

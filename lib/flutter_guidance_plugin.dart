@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:flutter/services.dart';
 
 export 'package:flutter_guidance_plugin/src/exp_guilde_function.dart';
-export 'package:flutter_guidance_plugin/src/curve_painter.dart';
+export 'package:flutter_guidance_plugin/src/guide_bean.dart';
 class FlutterGuidancePlugin {
   static const MethodChannel _channel =
       const MethodChannel('flutter_guidance_plugin');
