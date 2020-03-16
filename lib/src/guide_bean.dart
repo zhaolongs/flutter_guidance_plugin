@@ -36,3 +36,4 @@ class GlobalKeyPoint {
   GlobalKeyPoint(this.key,
       {this.tipsMessage = "--", this.nextString = "下一步",this.isShowReact=false});
 }
+
