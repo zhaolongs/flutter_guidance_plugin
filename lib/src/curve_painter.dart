@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math';
 import 'dart:ui' as ui; //这里用as取个别名，有库名冲突
 
@@ -5,7 +6,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_guidance_plugin/src/guide_logs.dart';
 
 import 'guide_bean.dart';
-
 
 ///提示框的位置
 enum CurverAlign {
@@ -27,7 +27,7 @@ enum ArrowsAlign {
   bottomtRight,
 }
 
-class CurvePainter extends CustomPainter {
+class CurvePainter extends CustomPainter  {
   double pointX = 0;
   double pointY = 0;
 
@@ -39,10 +39,13 @@ class CurvePainter extends CustomPainter {
 
   ///提示文字颜色
   Color tipsTextColor;
+
   ///提示文字背景颜色
   Color tipsBackgroundColor;
+
   ///提示文字内容
-  String textTip ;
+  String textTip;
+
   ///提示文字大小
   double tipsTextSize;
 
@@ -50,32 +53,46 @@ class CurvePainter extends CustomPainter {
   CurverAlign curverAlign = CurverAlign.topRight;
   ArrowsAlign curverArrowsAlign = ArrowsAlign.bottomtRight;
 
-
   ///下一步文字颜色
-  Color nextTextColor ;
+  Color nextTextColor;
+
   ///下一步背景颜色
   Color nextBackgroundColor;
+
   ///下一步文字
   String nextTextTip;
+
   ///下一步文字大小
   double nextTextSize;
 
   ///
   Offset slideOffset;
   Offset preSlideOffset;
+  Offset downSwiperOffset;
   Function(Rect rect) clickLiser;
 
-  CurvePainter(this.tipsTextColor, this.pointX, this.pointY,
+
+
+  AnimationController controller;
+
+  CurvePainter(this.controller,this.tipsTextColor, this.pointX, this.pointY,
       {this.clickLiser,
-        this.textTip = "", this.tipsTextSize = 16,this.tipsBackgroundColor=Colors.white,
-        this.nextTextTip = "下一步", this.nextTextColor = Colors.black, this.nextBackgroundColor = Colors
-          .white, this.nextTextSize = 16,
-        this.slideOffset, this.pointHeight, this.pointWidth, this.isShowReact = false});
+      this.downSwiperOffset,
+      this.textTip = "",
+      this.tipsTextSize = 16,
+      this.tipsBackgroundColor = Colors.white,
+      this.nextTextTip = "下一步",
+      this.nextTextColor = Colors.black,
+      this.nextBackgroundColor = Colors.white,
+      this.nextTextSize = 16,
+      this.slideOffset,
+      this.pointHeight,
+      this.pointWidth,
+      this.isShowReact = false});
 
   ///实际的绘画发生在这里
   @override
   void paint(Canvas canvas, Size size) {
-
     canvas.save();
     //屏幕高,这里不是一直成立,像当有Center 父控件的时候就不成立
     double height = size.height;
@@ -97,7 +114,6 @@ class CurvePainter extends CustomPainter {
     } else if (pointY > 1) {
       pointY = 1.0;
     }
-
 
     curverArrowsAlign = ArrowsAlign.top;
     curverAlign = CurverAlign.center;
@@ -130,7 +146,6 @@ class CurvePainter extends CustomPainter {
 
     double ex = pointX * width;
     double ey = pointY * height;
-
 
     /**
      * A点来控制 对齐位置
@@ -185,19 +200,21 @@ class CurvePainter extends CustomPainter {
 
     ///TODO 这还没写好
     ///
-    drawBackgroundFunction(canvas,ex,ey,size);
+    drawBackgroundFunction(canvas, ex, ey, size);
 
     ///绘制箭头在右下角的内容
     if (curverArrowsAlign == ArrowsAlign.bottomtRight) {
-      ey-=pointHeight;
+      ey -= pointHeight;
       drawArrowsBottomRight(canvas, A, size, ex, ey);
     } else if (curverArrowsAlign == ArrowsAlign.bottomtLeft) {
-      ey-=pointHeight;
+      ey -= pointHeight;
       drawArrowsBottomLeft(canvas, A, size, ex, ey);
     } else if (curverArrowsAlign == ArrowsAlign.top) {
       drawArrowsTopLeft(canvas, A, size, ex, ey);
     }
 
+    ///绘制点按水波纹
+    drawSwiperFunction(canvas, size);
     canvas.restore();
   }
 
@@ -209,30 +226,36 @@ class CurvePainter extends CustomPainter {
   }
 
   Rect rect2;
-  void drawBackgroundFunction(Canvas canvas,double ex,double ey,Size size) {
+
+  void drawBackgroundFunction(Canvas canvas, double ex, double ey, Size size) {
     ///绘制蒙版背景
     Paint backgroundPaint = new Paint();
-    backgroundPaint.color=Color(0x90000000);
+    backgroundPaint.color = Color(0x90000000);
     canvas.drawRect(Rect.fromLTRB(0, 0, 0, 0), backgroundPaint);
 
     //绘制两个矩形
-    Rect rect1 = Rect.fromCircle(center: Offset(0.0, 0.0), radius:size.height);
-    if(isShowReact&&pointWidth!=null&&pointWidth!=0&&pointHeight!=null&&pointHeight!=0){
-        rect2 = Rect.fromLTRB(ex, ey-pointHeight,ex+pointWidth,ey);
-    }else{
+    Rect rect1 = Rect.fromCircle(center: Offset(0.0, 0.0), radius: size.height);
+    if (isShowReact &&
+        pointWidth != null &&
+        pointWidth != 0 &&
+        pointHeight != null &&
+        pointHeight != 0) {
+      rect2 = Rect.fromLTRB(ex, ey - pointHeight, ex + pointWidth, ey);
+    } else {
       rect2 = Rect.fromCircle(center: Offset(0, 0), radius: 0.0);
     }
     //分别绘制外部圆角矩形和内部的圆角矩形
     RRect outer = RRect.fromRectAndRadius(rect1, Radius.circular(0));
-    RRect inner = RRect.fromRectAndRadius(rect2, Radius.circular(pointWidth/5));
+    RRect inner =
+        RRect.fromRectAndRadius(rect2, Radius.circular(pointWidth / 5));
     canvas.drawDRRect(outer, inner, backgroundPaint);
   }
 
   double wRadious = 214 / 2;
   double hRadious = 55;
 
-  void drawArrowsTopLeft(Canvas canvas, CurvePoint A, Size size, double ex,
-      double ey) {
+  void drawArrowsTopLeft(
+      Canvas canvas, CurvePoint A, Size size, double ex, double ey) {
     var paint = Paint();
     paint.color = Colors.white;
     var path = Path();
@@ -284,23 +307,21 @@ class CurvePainter extends CustomPainter {
     ///绘制 Path
     canvas.drawPath(path, paint);
 
-
-
-
     ///绘制点位置
     canvas.drawCircle(Offset(ex, ey), 4, paint);
 
     ///绘制文本
     drawTextFunction(
-        C.x - A.x - 40, Offset(A.x + 20, A.y - 20), canvas, textTip,textColor: tipsTextColor,textSize: tipsTextSize);
+        C.x - A.x - 40, Offset(A.x + 20, A.y - 20), canvas, textTip,
+        textColor: tipsTextColor, textSize: tipsTextSize);
 
     ///绘制下一步
-    drawNextFunction(A, B, C, G,size,canvas, nextTextTip);
+    drawNextFunction(A, B, C, G, size, canvas, nextTextTip);
   }
 
   ///绘制箭头在右下角的内容
-  void drawArrowsBottomRight(Canvas canvas, CurvePoint A,Size size,
-      double ex, double ey) {
+  void drawArrowsBottomRight(
+      Canvas canvas, CurvePoint A, Size size, double ex, double ey) {
     var paint = Paint();
     paint.color = Colors.white;
     var path = Path();
@@ -365,14 +386,15 @@ class CurvePainter extends CustomPainter {
 
     ///绘制文本
     drawTextFunction(
-        C.x - A.x - 40, Offset(A.x + 20, A.y - 20), canvas, textTip,textColor: tipsTextColor,textSize: tipsTextSize);
+        C.x - A.x - 40, Offset(A.x + 20, A.y - 20), canvas, textTip,
+        textColor: tipsTextColor, textSize: tipsTextSize);
 
     ///绘制下一步
-    drawNextFunction(A, B, C, G,size,canvas, nextTextTip);
+    drawNextFunction(A, B, C, G, size, canvas, nextTextTip);
   }
 
-  void drawArrowsBottomLeft(Canvas canvas, CurvePoint A, Size size,
-      double ex, double ey) {
+  void drawArrowsBottomLeft(
+      Canvas canvas, CurvePoint A, Size size, double ex, double ey) {
     var paint = Paint();
     paint.color = Colors.white;
     var path = Path();
@@ -437,66 +459,65 @@ class CurvePainter extends CustomPainter {
 
     ///绘制文本
     drawTextFunction(
-        C.x - A.x - 40, Offset(A.x + 20, A.y - 20), canvas, textTip,textColor: tipsTextColor,textSize: tipsTextSize);
+        C.x - A.x - 40, Offset(A.x + 20, A.y - 20), canvas, textTip,
+        textColor: tipsTextColor, textSize: tipsTextSize);
 
     ///绘制下一步
-    drawNextFunction(A, B, C, G,size,canvas, nextTextTip);
+    drawNextFunction(A, B, C, G, size, canvas, nextTextTip);
   }
 
-
-  void drawNextFunction(CurvePoint A, CurvePoint B, CurvePoint C, CurvePoint G,Size size, Canvas canvas,
-      String text,
+  void drawNextFunction(CurvePoint A, CurvePoint B, CurvePoint C, CurvePoint G,
+      Size size, Canvas canvas, String text,
       {Color textColor = Colors.blue}) {
+    double nextX = 0;
+    double nextY = 0;
 
-    double nextX=0;
-    double nextY=0;
-
-    if(curverAlign==CurverAlign.centerRight){
-      if(curverArrowsAlign==ArrowsAlign.top){
+    if (curverAlign == CurverAlign.centerRight) {
+      if (curverArrowsAlign == ArrowsAlign.top) {
         ///下面 参考点 G
-        nextY = G.y+44*2;
-        nextX = G.x-120;
-      }else{
+        nextY = G.y + 44 * 2;
+        nextX = G.x - 120;
+      } else {
         ///上面 参考点 B点
-        nextY = B.y-44*2;
-        nextX = B.x-120;
+        nextY = B.y - 44 * 2;
+        nextX = B.x - 120;
       }
-    }else if(curverAlign==CurverAlign.centerLeft){
-      if(curverArrowsAlign==ArrowsAlign.top){
+    } else if (curverAlign == CurverAlign.centerLeft) {
+      if (curverArrowsAlign == ArrowsAlign.top) {
         ///下面 参考点 G
-        nextY = G.y+44*2;
-        nextX = G.x+120;
-      }else{
+        nextY = G.y + 44 * 2;
+        nextX = G.x + 120;
+      } else {
         ///上面 参考点 B点
-        nextY = B.y-44*2;
-        nextX = B.x+120;
+        nextY = B.y - 44 * 2;
+        nextX = B.x + 120;
       }
-    }else if(curverAlign==CurverAlign.center){
-      if(curverArrowsAlign==ArrowsAlign.top){
+    } else if (curverAlign == CurverAlign.center) {
+      if (curverArrowsAlign == ArrowsAlign.top) {
         ///下面 参考点 G
-        nextY = G.y+44*2;
+        nextY = G.y + 44 * 2;
         nextX = G.x;
-      }else{
+      } else {
         ///上面 参考点 B点
-        nextY = B.y-44*2;
+        nextY = B.y - 44 * 2;
         nextX = B.x;
       }
-    }else{
-      nextY = size.height/2-44;
-      nextX = size.width/2-60;
+    } else {
+      nextY = size.height / 2 - 44;
+      nextX = size.width / 2 - 60;
     }
 
-    if(nextX<0){
-      nextX=0;
-    }else if(nextX+120>size.width){
-      nextX = size.width-120;
+    if (nextX < 0) {
+      nextX = 0;
+    } else if (nextX + 120 > size.width) {
+      nextX = size.width - 120;
     }
 
     var paint = Paint();
     paint.color = nextBackgroundColor;
     //用Rect构建一个边长50,中心点坐标为100,100的矩形
     Rect rect =
-    Rect.fromCenter(center: Offset(nextX, nextY), width: 120, height: 44);
+        Rect.fromCenter(center: Offset(nextX, nextY), width: 120, height: 44);
     //根据上面的矩形,构建一个圆角矩形
     RRect rrect = RRect.fromRectAndRadius(rect, Radius.circular(22.0));
     canvas.drawRRect(rrect, paint);
@@ -506,16 +527,17 @@ class CurvePainter extends CustomPainter {
       clickLiser(rect);
     }
 
-    drawTextFunction(rect.width,Offset(rect.left,rect.top+10),canvas,"下一步",textColor: nextTextColor,textSize:nextTextSize);
-
+    drawTextFunction(
+        rect.width, Offset(rect.left, rect.top + 10), canvas, "下一步",
+        textColor: nextTextColor, textSize: nextTextSize);
   }
 
   ///[textWidth] 文本的宽度
   ///[textOffset] 文本绘制的开始位置 左上角
   ///[text] 绘制的文字内容
-  void drawTextFunction(double textWidth, Offset textOffset, Canvas canvas,
-      String text,
-      {Color textColor = Colors.blue,double textSize=16}) {
+  void drawTextFunction(
+      double textWidth, Offset textOffset, Canvas canvas, String text,
+      {Color textColor = Colors.blue, double textSize = 16}) {
     ///创建画笔
     var textPaint = Paint();
 
@@ -543,14 +565,31 @@ class CurvePainter extends CustomPainter {
     // 设置文本的宽度约束
     ui.ParagraphConstraints pc = ui.ParagraphConstraints(width: textWidth);
     // 这里需要先layout,将宽度约束填入，否则无法绘制
-    ui.Paragraph paragraph = pb.build()
-      ..layout(pc);
+    ui.Paragraph paragraph = pb.build()..layout(pc);
 
     ///偏移量在这里指的是文字左上角的 位置
     canvas.drawParagraph(paragraph, textOffset);
   }
 
 
+
+  void drawSwiperFunction(Canvas canvas, Size size) {
+
+    if (downSwiperOffset != null) {
+      Paint paint = new Paint();
+      paint.color = Color.fromARGB(200, 255, 255, 255);
+      paint.color = Color.fromARGB((200*(1.0-controller.value)).toInt(), 255, 255, 255);
+      ///只有按下的时候绘制
+      canvas.drawCircle(downSwiperOffset, size.width/4/4*2*controller.value, paint);
+      ///只有按下的时候绘制
+      paint.color = Color.fromARGB((200*(1.0-controller.value)).toInt(), 255, 255, 255);
+      canvas.drawCircle(downSwiperOffset, size.width/4/4*3*controller.value, paint);
+      ///只有按下的时候绘制
+      paint.color = Color.fromARGB((200*(1.0-controller.value)).toInt(), 255, 255, 255);
+      canvas.drawCircle(downSwiperOffset, size.width/4/4*controller.value, paint);
+
+    }
+  }
 }
 
 class CurvePainter1 extends CustomPainter {

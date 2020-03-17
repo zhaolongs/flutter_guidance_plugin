@@ -35,6 +35,8 @@ void showBeginnerGuidance(BuildContext context,
       double  nextTextSize=16.0,
       bool isSlide = false,
       bool logs = false,
+      ///点按水波文效果
+      bool isSwiper=true,
       Function(bool isEnd) clickCallback}) {
   GuideLogs.isLogs = logs;
 
@@ -55,6 +57,7 @@ void showBeginnerGuidance(BuildContext context,
           nextTextColor: nextTextColor,
           nextTextSize: nextTextSize,
           isSlide: isSlide,
+          isSwiper:isSwiper,
           clickCallback: clickCallback);
     },
     transitionsBuilder: (BuildContext context, Animation<double> animation1,

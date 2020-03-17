@@ -34,6 +34,8 @@ class GuideSplashPage extends StatefulWidget {
   ///是否可滑动
   bool isSlide = false;
 
+  bool isSwiper ;
+
   ///需要引导的位置信息  List，GlobalKey widget 位置主键标识
   ///还是要转换成 List<CurvePoint>
   List<GlobalKeyPoint> globalKeyPointList;
@@ -56,6 +58,7 @@ class GuideSplashPage extends StatefulWidget {
     this.pointX = 0,
     this.pointY = 0,
     this.isSlide = false,
+    this.isSwiper,
     this.clickCallback});
 
   @override
@@ -64,7 +67,7 @@ class GuideSplashPage extends StatefulWidget {
   }
 }
 
-class _GuidePageState extends State<GuideSplashPage> {
+class _GuidePageState extends State<GuideSplashPage> with SingleTickerProviderStateMixin {
   ///当前可点击的下一步
   Rect nextRect;
   int currentPointIndex = 0;
@@ -72,9 +75,30 @@ class _GuidePageState extends State<GuideSplashPage> {
   ///滑动记录的点位
   Offset slideOffset;
 
+  ///点按水波纹
+  Offset downSwiperOffset;
+  AnimationController controller;
+  CurvedAnimation animation ;
   @override
   void initState() {
     super.initState();
+    controller = new AnimationController(
+        duration: new Duration(milliseconds: 600), vsync: this);
+
+    controller.addListener(() {
+      GuideLogs.e("animation value ${controller.value}");
+      setState(() {
+
+      });
+    });
+    controller.addStatusListener((status) {
+      if (status == AnimationStatus.completed) {
+        GuideLogs.e("animation 执行完成");
+        controller.reset();
+      }
+    });
+
+    animation=new CurvedAnimation(parent: controller, curve: Curves.linear);
 
     // 监听widget渲染完成
     WidgetsBinding.instance.addPostFrameCallback((duration){
@@ -164,6 +188,13 @@ class _GuidePageState extends State<GuideSplashPage> {
             onTapUp: (TapUpDetails detail) {
               GuideLogs.e('onTapUp');
               onTap(context, detail);
+            },
+            onTapDown:(TapDownDetails detail){
+              GuideLogs.e('onTapDown dx ${detail.globalPosition.dx} dy ${detail.globalPosition.dy}');
+              if(widget.isSwiper!=null&&widget.isSwiper){
+                downSwiperOffset = detail.globalPosition;
+                controller.forward();
+              }
             },
             /*横向拖动的开始状态*/
             onHorizontalDragStart: (startDetails) {
@@ -276,7 +307,7 @@ class _GuidePageState extends State<GuideSplashPage> {
       size: Size(width, height),
 
       ///这是CustomPainter类的一个实例，它在画布上绘制绘画的第一层
-      painter: CurvePainter(widget.tipsTextColor, curvePoint.x, curvePoint.y,
+      painter: CurvePainter(controller,widget.tipsTextColor, curvePoint.x, curvePoint.y,
           tipsBackgroundColor: widget.tipsBackgroundColor,
           tipsTextSize: widget.tipsTextSize,
           textTip: curvePoint.tipsMessage,
@@ -286,7 +317,7 @@ class _GuidePageState extends State<GuideSplashPage> {
           nextTextTip: curvePoint.nextString,
           pointHeight: curvePoint.eHeight,
           pointWidth: curvePoint.eWidth,
-
+          downSwiperOffset:downSwiperOffset,
           clickLiser: liserClickCallback,
           isShowReact: curvePoint.isShowReact,
           slideOffset: slideOffset),
@@ -304,5 +335,11 @@ class _GuidePageState extends State<GuideSplashPage> {
     );
   }
 
+  @override
+  void dispose() {
+    // TODO: implement dispose
+    super.dispose();
+    controller.dispose();
+  }
 
 }
