@@ -209,6 +209,11 @@ class _GuidePageState extends State<GuideSplashPage> {
 
   ///用户计算下一步的点击事件
   void onTap(BuildContext context, TapUpDetails detail) {
+
+    if(widget.curvePointList==null){
+      Navigator.of(context).pop();
+    }
+
     Offset globalPosition = detail.globalPosition;
     GuideLogs.e("onTapUp 点击了 ${globalPosition.dx}  ${globalPosition.dy}");
     if (nextRect != null) {
