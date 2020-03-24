@@ -37,6 +37,8 @@ void showBeginnerGuidance(BuildContext context,
       bool logs = false,
       ///点按水波文效果
       bool isSwiper=true,
+      ///只绘制边框
+      bool isStore = false,
       Function(bool isEnd) clickCallback}) {
   GuideLogs.isLogs = logs;
 
@@ -58,6 +60,7 @@ void showBeginnerGuidance(BuildContext context,
           nextTextSize: nextTextSize,
           isSlide: isSlide,
           isSwiper:isSwiper,
+          isStore: isStore,
           clickCallback: clickCallback);
     },
     transitionsBuilder: (BuildContext context, Animation<double> animation1,

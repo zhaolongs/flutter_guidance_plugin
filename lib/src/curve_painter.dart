@@ -70,6 +70,8 @@ class CurvePainter extends CustomPainter  {
   Offset preSlideOffset;
   Offset downSwiperOffset;
   Function(Rect rect) clickLiser;
+  ///为true时只绘制边框
+  bool isStore=false;
 
 
 
@@ -88,6 +90,7 @@ class CurvePainter extends CustomPainter  {
       this.slideOffset,
       this.pointHeight,
       this.pointWidth,
+        this.isStore=false,
       this.isShowReact = false});
 
   ///实际的绘画发生在这里
@@ -256,8 +259,7 @@ class CurvePainter extends CustomPainter  {
 
   void drawArrowsTopLeft(
       Canvas canvas, CurvePoint A, Size size, double ex, double ey) {
-    var paint = Paint();
-    paint.color = Colors.white;
+    var paint = getPaint();
     var path = Path();
 
     CurvePoint a1 = CurvePoint(A.x, A.y - 24);
@@ -319,11 +321,21 @@ class CurvePainter extends CustomPainter  {
     drawNextFunction(A, B, C, G, size, canvas, nextTextTip);
   }
 
+  Paint getPaint(){
+    var paint = Paint();
+    paint.color = Colors.white;
+    if(isStore){
+      paint.style=PaintingStyle.stroke;
+      paint.strokeWidth=2.0;
+      paint.strokeCap = StrokeCap.butt;
+    }
+    return paint;
+  }
   ///绘制箭头在右下角的内容
   void drawArrowsBottomRight(
       Canvas canvas, CurvePoint A, Size size, double ex, double ey) {
-    var paint = Paint();
-    paint.color = Colors.white;
+    var paint = getPaint();
+
     var path = Path();
 
     CurvePoint a1 = CurvePoint(A.x, A.y - 30);
@@ -395,8 +407,7 @@ class CurvePainter extends CustomPainter  {
 
   void drawArrowsBottomLeft(
       Canvas canvas, CurvePoint A, Size size, double ex, double ey) {
-    var paint = Paint();
-    paint.color = Colors.white;
+    var paint = getPaint();
     var path = Path();
 
     CurvePoint a1 = CurvePoint(A.x, A.y - 30);

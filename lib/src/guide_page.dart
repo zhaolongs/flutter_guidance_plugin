@@ -21,6 +21,8 @@ class GuideSplashPage extends StatefulWidget {
   double tipsTextSize;
 
 
+
+
   ///下一步文字颜色
   Color nextTextColor ;
   ///下一步背景颜色
@@ -33,6 +35,8 @@ class GuideSplashPage extends StatefulWidget {
 
   ///是否可滑动
   bool isSlide = false;
+  ///是否只绘制边框
+  bool isStore =false;
 
   bool isSwiper ;
 
@@ -58,6 +62,7 @@ class GuideSplashPage extends StatefulWidget {
     this.pointX = 0,
     this.pointY = 0,
     this.isSlide = false,
+    this.isStore=false,
     this.isSwiper,
     this.clickCallback});
 
@@ -310,6 +315,7 @@ class _GuidePageState extends State<GuideSplashPage> with SingleTickerProviderSt
       painter: CurvePainter(controller,widget.tipsTextColor, curvePoint.x, curvePoint.y,
           tipsBackgroundColor: widget.tipsBackgroundColor,
           tipsTextSize: widget.tipsTextSize,
+          isStore:widget.isStore,
           textTip: curvePoint.tipsMessage,
           nextBackgroundColor: widget.nextBackgroundColor,
           nextTextSize: widget.nextTextSize,
